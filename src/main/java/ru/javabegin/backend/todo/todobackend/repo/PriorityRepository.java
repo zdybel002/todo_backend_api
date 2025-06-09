@@ -9,19 +9,20 @@ import ru.javabegin.backend.todo.todobackend.entity.Priority;
 
 import java.util.List;
 
-// принцип ООП: абстракция-реализация - здесь описываем все доступные способы доступа к данным
+// OOP principle: abstraction-implementation — here we describe all available ways to access data
 @Repository
 public interface PriorityRepository extends JpaRepository<Priority, Long> {
 
-    // поиск всех значений данного пользователя
+    // find all values for the given user
     List<Priority> findByUserEmailOrderByIdAsc(String email);
 
-    // поиск значений по названию для конкретного пользователя
+    // find values by title for a specific user
     @Query("SELECT p FROM Priority p where " +
-            "(:title is null or :title='' " + // если передадим параметр title пустым, то выберутся все записи (сработает именно это условие)
-            " or lower(p.title) like lower(concat('%', :title,'%'))) " + // если параметр title не пустой, то выполнится уже это условие
-            " and p.user.email=:email " + // фильтрация для конкретного пользователя
-            "order by p.title asc") // сортировка по названию
+            "(:title is null or :title='' " + // if the title parameter is empty, all records will be selected (this condition applies)
+            " or lower(p.title) like lower(concat('%', :title,'%'))) " + // if the title parameter is not empty, this condition applies
+            " and p.user.email=:email " + // filtering for a specific user
+            "order by p.title asc") // sorting by title
     List<Priority> findByTitle(@Param("title") String title, @Param("email") String email);
 
 }
+

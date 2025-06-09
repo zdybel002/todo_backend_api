@@ -16,11 +16,11 @@ import java.util.Objects;
 
 /*
 
-справочноное значение - категория пользователя
-может использовать для своих задач
-содержит статистику по каждой категории
+Reference value - user category
+Can be used for user's tasks
+Contains statistics for each category
 
- */
+*/
 
 @Entity
 @Table(name = "category", schema = "todolist", catalog = "postgres")
@@ -32,25 +32,24 @@ import java.util.Objects;
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Category {
 
-    // указываем, что поле заполняется в БД
-    // нужно, когда добавляем новый объект и он возвращается уже с новым id
+    // specify that the field is populated in the DB
+    // needed when adding a new object and it is returned with a new id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
     private String title;
 
-    @Column(name = "completed_count", updatable = false) // т.к. это поле высчитывается автоматически в триггерах - вручную его не обновляем (updatable = false)
+    @Column(name = "completed_count", updatable = false) // since this field is automatically calculated in triggers - we don't update it manually (updatable = false)
     private Long completedCount;
 
-    @Column(name = "uncompleted_count", updatable = false) // т.к. это поле высчитывается автоматически в триггерах - вручную его не обновляем (updatable = false)
+    @Column(name = "uncompleted_count", updatable = false) // since this field is automatically calculated in triggers - we don't update it manually (updatable = false)
     private Long uncompletedCount;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id") // по каким полям связаны эти 2 объекта (foreign key)
+    @JoinColumn(name = "user_id", referencedColumnName = "id") // which fields link these two objects (foreign key)
     private User user;
-
 
     @Override
     public boolean equals(Object o) {

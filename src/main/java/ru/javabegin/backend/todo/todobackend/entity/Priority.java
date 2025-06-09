@@ -12,12 +12,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.util.Objects;
 
-/*
-
-справочноное значение - приоритет пользователя
-может использовать для своих задач
-
- */
 
 
 @Entity
@@ -30,8 +24,7 @@ import java.util.Objects;
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Priority {
 
-    // указываем, что поле заполняется в БД
-    // нужно, когда добавляем новый объект и он возвращается уже с новым id
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
@@ -41,7 +34,7 @@ public class Priority {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id") // по каким полям связывать (foreign key)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @Override

@@ -10,18 +10,15 @@ import ru.javabegin.backend.todo.todobackend.repo.CategoryRepository;
 import java.util.List;
 
 
-// всегда нужно создавать отдельный класс Service для доступа к данным, даже если кажется,
-// что мало методов или это все можно реализовать сразу в контроллере
-// Такой подход полезен для будущих доработок и правильной архитектуры (особенно, если работаете с транзакциями)
+
 @Service
 
-// все методы класса должны выполниться без ошибки, чтобы транзакция завершилась
-// если в методе выполняются несолько SQL запросов и возникнет исключение - то все выполненные операции откатятся (Rollback)
+
 @Transactional
 public class CategoryService {
 
-    // работает встроенный механизм DI из Spring, который при старте приложения подставит в эту переменную нужные класс-реализацию
-    private final CategoryRepository repository; // сервис имеет право обращаться к репозиторию (БД)
+
+    private final CategoryRepository repository; // service has the right to access the repository (database)
 
     public CategoryService(CategoryRepository repository) {
         this.repository = repository;
@@ -32,26 +29,26 @@ public class CategoryService {
     }
 
     public Category add(Category category) {
-        return repository.save(category); // метод save обновляет или создает новый объект, если его не было
+        return repository.save(category); // save method updates or creates a new object if it didn't exist
     }
 
     public Category update(Category category) {
-        return repository.save(category); // метод save обновляет или создает новый объект, если его не было
+        return repository.save(category); // save method updates or creates a new object if it didn't exist
     }
 
     public void deleteById(Long id) {
         repository.deleteById(id);
     }
 
-    // поиск категорий пользователя по названию
+    // find user categories by title
     public List<Category> findByTitle(String text, String email) {
         return repository.findByTitle(text, email);
     }
 
-    // поиск категории по ID
+    // find category by ID
     public Category findById(Long id) {
-        return repository.findById(id).get(); // т.к. возвращается Optional - можно получить объект методом get()
+        return repository.findById(id).get(); // since an Optional is returned, we get the object using get()
     }
 
-
 }
+

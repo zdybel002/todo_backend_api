@@ -10,11 +10,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.util.Objects;
 
-/*
 
-Все доступные роли, которые будут привязаны к пользователю
-
-*/
 
 
 @Entity

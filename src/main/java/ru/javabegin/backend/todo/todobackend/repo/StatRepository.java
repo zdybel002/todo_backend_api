@@ -5,9 +5,9 @@ import org.springframework.stereotype.Repository;
 import ru.javabegin.backend.todo.todobackend.entity.Stat;
 
 
-// принцип ООП: абстракция-реализация - здесь описываем все доступные способы доступа к данным
+// OOP principle: abstraction-implementation — here we describe all available ways to access data
 @Repository
 public interface StatRepository extends CrudRepository<Stat, Long> {
 
-    Stat findByUserEmail(String email); // всегда получаем только 1 объект, т.к. 1 пользователь содержит только 1 строку статистики (связь "один к одному")
+    Stat findByUserEmail(String email); // always get only 1 object, since 1 user has only 1 statistics record (one-to-one relationship)
 }

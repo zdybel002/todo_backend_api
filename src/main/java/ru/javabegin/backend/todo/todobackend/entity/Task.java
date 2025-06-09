@@ -18,9 +18,9 @@ import java.util.Objects;
 
 /*
 
-задачи пользователя
+User tasks
 
- */
+*/
 
 @Entity
 @Table(name = "task", schema = "todolist", catalog = "postgres")
@@ -32,8 +32,8 @@ import java.util.Objects;
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Task {
 
-    // указываем, что поле заполняется в БД
-    // нужно, когда добавляем новый объект и он возвращается уже с новым id
+    // specify that the field is generated in the DB
+    // necessary when adding a new object and returning it with a new id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
@@ -42,25 +42,25 @@ public class Task {
 
     @Convert(converter = NumericBooleanConverter.class)
     private Boolean completed;
-    // для автоматической конвертации числа в true/false
+    // for automatic conversion of number to true/false
 
-    @Column(name = "task_date") // в БД поле называется task_date, т.к. нельзя использовать системное имя date
+    @Column(name = "task_date") // in DB the field is named task_date because date is a reserved word
     private Date taskDate;
 
-    // задача может иметь только один приоритет (с обратной стороны - один и тот же приоритет может быть использоваться в множестве задач)
+    // task can have only one priority (from the other side - the same priority can be used in many tasks)
     @ManyToOne
-    @JoinColumn(name = "priority_id", referencedColumnName = "id") // по каким полям связывать (foreign key)
+    @JoinColumn(name = "priority_id", referencedColumnName = "id") // fields to join by (foreign key)
     private Priority priority;
 
-    // задача может иметь только одну категорию (с обратной стороны - одна и та же категория может быть использоваться в множестве задач)
+    // task can have only one category (from the other side - the same category can be used in many tasks)
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id") // по каким полям связывать (foreign key)
+    @JoinColumn(name = "category_id", referencedColumnName = "id") // fields to join by (foreign key)
     private Category category;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id") // по каким полям связывать (foreign key)
-    private User user; // для какого пользователя задача
+    @JoinColumn(name = "user_id", referencedColumnName = "id") // fields to join by (foreign key)
+    private User user; // for which user the task belongs
 
 
     @Override

@@ -12,44 +12,31 @@ import ru.javabegin.backend.todo.todobackend.entity.Task;
 import ru.javabegin.backend.todo.todobackend.search.TaskSearchValues;
 import ru.javabegin.backend.todo.todobackend.service.TaskService;
 
-
 import java.text.ParseException;
 import java.util.*;
 
 
-/*
 
-Чтобы дать меньше шансов для взлома (например, CSRF атак): POST/PUT запросы могут изменять/фильтровать закрытые данные, а GET запросы - для получения незащищенных данных
-Т.е. GET-запросы не должны использоваться для изменения/получения секретных данных
-
-Если возникнет exception - вернется код  500 Internal Server Error, поэтому не нужно все действия оборачивать в try-catch
-
-Используем @RestController вместо обычного @Controller, чтобы все ответы сразу оборачивались в JSON,
-иначе пришлось бы добавлять лишние объекты в код, использовать @ResponseBody для ответа, указывать тип отправки JSON
-
-Названия методов могут быть любыми, главное не дублировать их имена и URL mapping
-
-*/
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/task") // базовый URI
+@RequestMapping("/task") // base URI
 public class TaskController {
 
-    public static final String ID_COLUMN = "id"; // имя столбца id
-    private final TaskService taskService; // сервис для доступа к данным (напрямую к репозиториям не обращаемся)
+    public static final String ID_COLUMN = "id"; // name of the ID column
+    private final TaskService taskService; // service to access data (we don't call repositories directly)
 
 
-    // используем автоматическое внедрение экземпляра класса через конструктор
-    // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
+    // constructor-based dependency injection
+    // we don't use @Autowired on the class field because "Field injection is not recommended"
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
 
-    // получение всех данных
+    // get all tasks
     @PostMapping("/all")
     public ResponseEntity<List<Task>> findAll(@RequestBody String email) {
-        return ResponseEntity.ok(taskService.findAll(email)); // поиск всех задач конкретного пользователя
+        return ResponseEntity.ok(taskService.findAll(email)); // find all tasks for the specific user
     }
 
 //    @PostMapping("/category")
@@ -65,76 +52,77 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    // добавление
+    // add new task
     @PostMapping("/add")
     public ResponseEntity<Task> add(@RequestBody Task task) {
 
-        // проверка на обязательные параметры
+        // check required fields
         if (task.getId() != null && task.getId() != 0) {
-            // id создается автоматически в БД (autoincrement), поэтому его передавать не нужно, иначе может быть конфликт уникальности значения
+            // id is auto-generated in DB (autoincrement), so it shouldn't be passed to avoid uniqueness conflicts
             return new ResponseEntity("redundant param: id MUST be null", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        // если передали пустое значение title
+        // if title is empty or null
         if (task.getTitle() == null || task.getTitle().trim().length() == 0) {
             return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(taskService.add(task)); // возвращаем созданный объект со сгенерированным id
+        return ResponseEntity.ok(taskService.add(task)); // return created object with generated id
 
     }
 
 
-    // обновление
+    // update existing task
     @PutMapping("/update")
     public ResponseEntity<Task> update(@RequestBody Task task) {
 
-        // проверка на обязательные параметры
+        // check required fields
         if (task.getId() == null || task.getId() == 0) {
             return new ResponseEntity("missed param: id", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        // если передали пустое значение title
+        // if title is empty or null
         if (task.getTitle() == null || task.getTitle().trim().length() == 0) {
             return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
 
-        // save работает как на добавление, так и на обновление
+        // save works for both adding and updating
         taskService.update(task);
 
-        return new ResponseEntity(HttpStatus.OK); // просто отправляем статус 200 (операция прошла успешно)
+        return new ResponseEntity(HttpStatus.OK); // just return status 200 (operation succeeded)
 
     }
 
 
-    // для удаления используем типа запроса put, а не delete, т.к. он позволяет передавать значение в body, а не в адресной строке
+    // for deletion, we use DELETE with id in URL, not PUT,
+    // because DELETE is more suitable and RESTful for removing resources
     @DeleteMapping("/delete/{id}")
     public ResponseEntity delete(@PathVariable("id") Long id) {
 
-        // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
-        // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
+        // try-catch is optional, without it stacktrace will be returned on error
+        // here is an example of handling exceptions and sending custom message/status
         try {
             taskService.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
-        return new ResponseEntity(HttpStatus.OK); // просто отправляем статус 200 (операция прошла успешно)
+        return new ResponseEntity(HttpStatus.OK); // just return status 200 (operation succeeded)
     }
 
 
-    // получение объекта по id
+    // get task by id
     @PostMapping("/id")
     public ResponseEntity<Task> findById(@RequestBody Long id) {
 
         Task task = null;
 
-        // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
-        // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
+        // try-catch is optional, without it stacktrace will be returned on error
+        // here is an example of handling exceptions and sending custom message/status
         try {
             task = taskService.findById(id);
-        } catch (NoSuchElementException e) { // если объект не будет найден
+        } catch (NoSuchElementException e) { // if object not found
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -143,14 +131,14 @@ public class TaskController {
     }
 
 
-    // поиск по любым параметрам TaskSearchValues
+    // search by any parameters in TaskSearchValues
     @PostMapping("/search")
     public ResponseEntity<Page<Task>> search(@RequestBody TaskSearchValues taskSearchValues) throws ParseException {
 
-        // исключить NullPointerException
+        // avoid NullPointerException
         String title = taskSearchValues.getTitle() != null ? taskSearchValues.getTitle() : null;
 
-        // конвертируем Boolean в Integer
+        // convert Boolean to Integer
         Boolean completed = taskSearchValues.getCompleted() != null && taskSearchValues.getCompleted() == 1 ? true : false;
 
         Long priorityId = taskSearchValues.getPriorityId() != null ? taskSearchValues.getPriorityId() : null;
@@ -162,21 +150,21 @@ public class TaskController {
         Integer pageNumber = taskSearchValues.getPageNumber() != null ? taskSearchValues.getPageNumber() : null;
         Integer pageSize = taskSearchValues.getPageSize() != null ? taskSearchValues.getPageSize() : null;
 
-        String email = taskSearchValues.getEmail() != null ? taskSearchValues.getEmail() : null; // для показа задач только этого пользователя
+        String email = taskSearchValues.getEmail() != null ? taskSearchValues.getEmail() : null; // to show tasks for this user only
 
-        // проверка на обязательные параметры
+        // check required params
         if (email == null || email.trim().length() == 0) {
             return new ResponseEntity("missed param: email", HttpStatus.NOT_ACCEPTABLE);
         }
 
 
-        // чтобы захватить в выборке все задачи по датам, независимо от времени - можно выставить время с 00:00 до 23:59
+        // to capture all tasks within date range regardless of time - set times from 00:00 to 23:59
 
         Date dateFrom = null;
         Date dateTo = null;
 
 
-        // выставить 00:01 для начальной даты (если она указана)
+        // set time to 00:01 for start date (if specified)
         if (taskSearchValues.getDateFrom() != null) {
             Calendar calendarFrom = Calendar.getInstance();
             calendarFrom.setTime(taskSearchValues.getDateFrom());
@@ -185,12 +173,12 @@ public class TaskController {
             calendarFrom.set(Calendar.SECOND, 1);
             calendarFrom.set(Calendar.MILLISECOND, 1);
 
-            dateFrom = calendarFrom.getTime(); // записываем начальную дату с 00:01
+            dateFrom = calendarFrom.getTime(); // set start date time to 00:01
 
         }
 
 
-        // выставить 23:59 для конечной даты (если она указана)
+        // set time to 23:59 for end date (if specified)
         if (taskSearchValues.getDateTo() != null) {
 
             Calendar calendarTo = Calendar.getInstance();
@@ -200,30 +188,30 @@ public class TaskController {
             calendarTo.set(Calendar.SECOND, 59);
             calendarTo.set(Calendar.MILLISECOND, 999);
 
-            dateTo = calendarTo.getTime(); // записываем конечную дату с 23:59
+            dateTo = calendarTo.getTime(); // set end date time to 23:59
 
         }
 
 
-        // направление сортировки
+        // sort direction
         Sort.Direction direction = sortDirection == null || sortDirection.trim().length() == 0 || sortDirection.trim().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-        /* Вторым полем для сортировки добавляем id, чтобы всегда сохранялся строгий порядок.
-            Например, если у 2-х задач одинаковое значение приоритета и мы сортируем по этому полю.
-            Порядок следования этих 2-х записей после выполнения запроса может каждый раз меняться, т.к. не указано второе поле сортировки.
-            Поэтому и используем ID - тогда все записи с одинаковым значением приоритета будут следовать в одном порядке по ID.
+        /* We add ID as the second sort field to ensure a consistent order.
+           For example, if two tasks have the same priority and we sort by that field,
+           the order of those two records could vary on each query since no secondary sort is specified.
+           Using ID as the secondary sort field guarantees consistent ordering of tasks with identical priority.
          */
 
-        // объект сортировки, который содержит стобец и направление
+        // create sort object with column and direction
         Sort sort = Sort.by(direction, sortColumn, ID_COLUMN);
 
-        // объект постраничности
+        // pagination object
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
 
-        // результат запроса с постраничным выводом
+        // query result with pagination
         Page<Task> result = taskService.findByParams(title, completed, priorityId, categoryId, email, dateFrom, dateTo, pageRequest);
 
-        // результат запроса
+        // return query result
         return ResponseEntity.ok(result);
 
     }

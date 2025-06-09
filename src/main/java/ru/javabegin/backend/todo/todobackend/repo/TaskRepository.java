@@ -12,13 +12,13 @@ import ru.javabegin.backend.todo.todobackend.entity.Task;
 import java.util.Date;
 import java.util.List;
 
-// принцип ООП: абстракция-реализация - здесь описываем все доступные способы доступа к данным
+// OOP principle: abstraction-implementation — here we describe all available ways to access data
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("SELECT t FROM Task t where " +
             "(:title is null or :title='' or lower(t.title) like lower(concat('%', :title,'%'))) and" +
-            "(:completed is null or t.completed=:completed) and " +  // учитываем, что параметр может быть null или пустым
+            "(:completed is null or t.completed=:completed) and " +  // consider that parameter can be null or empty
             "(:priorityId is null or t.priority.id=:priorityId) and " +
             "(:categoryId is null or t.category.id=:categoryId) and " +
             "(:categoryId is null or t.category.id=:categoryId) and " +
@@ -26,9 +26,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             "(cast(:dateFrom as timestamp) is null or t.taskDate>=:dateFrom) and " +
             "(cast(:dateTo as timestamp) is null or t.taskDate<=:dateTo)" +
             ") and " +
-            "(t.user.email=:email)" // показывать задачи только определенного пользователя, а не все
+            "(t.user.email=:email)" // show tasks only for the specified user, not all
     )
-        // искать по всем переданным параметрам (пустые параметры учитываться не будут)
+        // search by all provided parameters (empty parameters will be ignored)
     Page<Task> findByParams(@Param("title") String title,
                             @Param("completed") Boolean completed,
                             @Param("priorityId") Long priorityId,
@@ -39,15 +39,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
                             Pageable pageable
     );
 
-
-    // поиск всех задач конкретного пользователя
+    // find all tasks of a specific user
     List<Task> findByUserEmailOrderByTaskDateDesc(String email);
 
     List<Task> findByCategory_IdOrderByTaskDateAsc(Long categoryId);
 
-
-
-
-
-
 }
+

@@ -12,18 +12,18 @@ import org.springframework.util.StopWatch;
 @Component
 @Log
 
-// можно динамически изменять поведение кода с помощью аспектов
+
 public class LoggingAspect {
 
-    //аспект будет выполняться для всех методов из пакета контроллеров
+
     @Around("execution(* ru.javabegin.backend.todo.controller..*(..)))")
     public Object profileControllerMethods(ProceedingJoinPoint proceedingJoinPoint) throws Throwable
     {
 
-        // считываем метаданные - что сейчас выполняется
+
         MethodSignature methodSignature = (MethodSignature) proceedingJoinPoint.getSignature();
 
-        // получить информацию о том, какой класс и метод выполняется
+
         String className = methodSignature.getDeclaringType().getSimpleName();
         String methodName = methodSignature.getName();
 
@@ -31,7 +31,7 @@ public class LoggingAspect {
 
         StopWatch countdown = new StopWatch();
 
-        //  засекаем время
+
         countdown.start();
         Object result = proceedingJoinPoint.proceed(); // выполняем сам метод
         countdown.stop();

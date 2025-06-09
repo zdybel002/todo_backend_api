@@ -9,38 +9,25 @@ import ru.javabegin.backend.todo.todobackend.service.StatService;
 
 
 
-/*
-
-Чтобы дать меньше шансов для взлома (например, CSRF атак): POST/PUT запросы могут изменять/фильтровать закрытые данные, а GET запросы - для получения незащищенных данных
-Т.е. GET-запросы не должны использоваться для изменения/получения секретных данных
-
-Если возникнет exception - вернется код  500 Internal Server Error, поэтому не нужно все действия оборачивать в try-catch
-
-Используем @RestController вместо обычного @Controller, чтобы все ответы сразу оборачивались в JSON,
-иначе пришлось бы добавлять лишние объекты в код, использовать @ResponseBody для ответа, указывать тип отправки JSON
-
-Названия методов могут быть любыми, главное не дублировать их имена и URL mapping
-
-*/
 
 @RestController
-// базовый URI не нужен, т.к. метод только один
+// base URI is not needed since there is only one method
 public class StatController {
 
-    private final StatService statService; // сервис для доступа к данным (напрямую к репозиториям не обращаемся)
+    private final StatService statService; // service to access data (we don't call repositories directly)
 
-    // используем автоматическое внедрение экземпляра класса через конструктор
-    // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
+    // constructor-based dependency injection
+    // we don't use @Autowired on the field because "Field injection is not recommended"
     public StatController(StatService statService) {
         this.statService = statService;
     }
 
 
-    // для статистика всгда получаем только одну строку с id=1 (согласно таблице БД)
+    // for statistics, we always get only one row with id=1 (according to the DB table)
     @PostMapping("/stat")
     public ResponseEntity<Stat> findByEmail(@RequestBody String email) {
 
-        // можно не использовать ResponseEntity, а просто вернуть коллекцию, код все равно будет 200 ОК
+        // you can skip ResponseEntity and just return the collection, status code will still be 200 OK
         return ResponseEntity.ok(statService.findStat(email));
     }
 
